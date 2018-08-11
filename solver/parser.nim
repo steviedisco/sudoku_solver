@@ -3,7 +3,7 @@ import types
 
 {.push hint[XDeclaredButNotUsed]: off.}
 
-proc parse(path: string): matrix =
+proc parse(path: string): Matrix =
     var stream = newFileStream(path, fmRead)
     if stream == nil: 
         quit("cannot open the file" & path)

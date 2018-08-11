@@ -1,5 +1,5 @@
 {.push hint[XDeclaredButNotUsed]: off.}
 
-type matrix = seq[seq[string]]
+type Matrix = seq[seq[string]]
 
-export matrix
+export Matrix

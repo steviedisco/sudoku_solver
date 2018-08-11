@@ -1,7 +1,7 @@
 import os
 import types
 
-proc write(matrix: types.matrix) =
+proc write(matrix: Matrix) =
     for row in matrix:
         var output: string = ""
         for value in row:
