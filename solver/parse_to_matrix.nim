@@ -1,6 +1,8 @@
 import os, parsecsv, streams
 import types
 
+{.push hint[XDeclaredButNotUsed]: off.}
+
 proc parse(path: string): matrix =
     var stream = newFileStream(path, fmRead)
     if stream == nil: 
