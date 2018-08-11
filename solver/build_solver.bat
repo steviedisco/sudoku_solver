@@ -1,0 +1,1 @@
+nim c -r --verbosity:0 parse.nim
