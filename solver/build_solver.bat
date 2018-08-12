@@ -1,1 +1,5 @@
-nim c -r --verbosity:0 solver.nim
+REM debug
+nim c --lineDir:on --debuginfo main.nim 
+
+REM release
+REM nim c -r -o:sudoku_solver.exe --verbosity:0 main.nim

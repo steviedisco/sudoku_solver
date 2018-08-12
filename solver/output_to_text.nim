@@ -1,6 +1,8 @@
 import os
 import types
 
+{.push hint[XDeclaredButNotUsed]: off.}
+
 proc write(matrix: Matrix) =
     for row in matrix:
         var output: string = ""
