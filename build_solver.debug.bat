@@ -1,0 +1,1 @@
+nim c --lineDir:on --debuginfo main.nim 
