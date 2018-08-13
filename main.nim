@@ -1,5 +1,5 @@
 import os, parsecsv, macros, strutils
-import types, csv_parser, solver, matrix_convert
+import types, csv_parser, solver, matrix_convert, stopwatch
 
 {.push hint[XDeclaredButNotUsed]: off.}
 
@@ -16,18 +16,21 @@ proc output_csv(output_dir: string, input_file: string, content: string) =
     module.write(content)
     module.close
 
-proc csv_solve(input_dir: string, output_dir: string) =
+proc solve_csv(csv: string, output_dir: string) =
+    var known = csv_parser.parse(csv)
+    var solution = solver.solve(known)
+    output_csv(output_dir, csv, matrix_convert.to_string(solution))
+
+proc process_csvs(input_dir: string, output_dir: string) =
     var csv_inputs = list_files(input_dir, "csv")
 
     for csv in csv_inputs:
-        var known = csv_parser.parse(csv)
-        var solution = solver.solve(known)
-        output_csv(output_dir, csv, matrix_convert.to_string(solution))
+        echo time(csv, solve_csv(csv, output_dir))
 
 proc main() =
     var input_dir = paramStr(1)
     var output_dir = paramStr(2)
 
-    csv_solve(input_dir, output_dir)
+    echo time("All CSVs", process_csvs(input_dir, output_dir))
 
-main()
+echo time("Total", main())
