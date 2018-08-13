@@ -1,16 +1,16 @@
 import strutils
-import types
+import utils
 
 proc square*(i: cint; j: cint): cint
-proc set_cell*(i: cint; j: cint; n: cint)
-proc clear_cell*(i: cint; j: cint): cint
-proc init_known*(matrix: Matrix)
-proc is_available*(i: cint; j: cint; n: cint): bool
-proc advance_cell*(i: cint; j: cint): bool
-proc init_bits*()
+proc setCell*(i: cint; j: cint; n: cint)
+proc clearCell*(i: cint; j: cint): cint
+proc initKnown*(matrix: Matrix)
+proc isAvailable*(i: cint; j: cint; n: cint): bool
+proc advanceCell*(i: cint; j: cint): bool
+proc initBits*()
 proc solve*(matrix: Matrix): Matrix
 proc algorithm*(): Matrix
-proc array_to_matrix*(): Matrix
+proc arrayToMatrix*(): Matrix
 
 ##  The Sudoku matrix itself.
 var matrix*: array[9, array[9, cint]]
@@ -34,8 +34,8 @@ var cols*: array[9, cint]
 var bits*: array[10, cint]
 
 proc solve*(matrix: Matrix): Matrix =
-  init_bits()
-  init_known(matrix)
+  initBits()
+  initKnown(matrix)
   result = algorithm() 
 
 ##  Returns the index of the square the cell (i, j) belongs to.
@@ -44,7 +44,7 @@ proc square*(i: cint; j: cint): cint =
 
 ## Stores the number n in the cell (i, j), and turns on the corresponding
 ## bits in rows, cols, and squares.
-proc set_cell*(i: cint; j: cint; n: cint) =
+proc setCell*(i: cint; j: cint; n: cint) =
   matrix[i][j] = n
   rows[i] = rows[i] or bits[n]
   cols[j] = cols[j] or bits[n]
@@ -52,7 +52,7 @@ proc set_cell*(i: cint; j: cint; n: cint) =
 
 ##  Clears the cell (i, j) and turns off the corresponding bits in rows, cols,
 ## and squares. Returns the number it contained.
-proc clear_cell*(i: cint; j: cint): cint =
+proc clearCell*(i: cint; j: cint): cint =
   var n: cint = matrix[i][j]
   matrix[i][j] = 0
   rows[i] = rows[i] and not bits[n]
@@ -63,7 +63,7 @@ proc clear_cell*(i: cint; j: cint): cint =
 ##  Processes the program arguments. Each argument is assumed to be a string
 ## with three digits row-col-number, 1-based, representing the known cells in the
 ## Sudoku. For example, "123" means there is a 3 in the cell (0, 1).
-proc init_known*(matrix: Matrix) =
+proc initKnown*(matrix: Matrix) =
   var row_count: cint = 0
   for row in matrix:
     inc(row_count)
@@ -73,21 +73,21 @@ proc init_known*(matrix: Matrix) =
       inc(col_count)
       
       if value.find(Digits) >= 0:
-        set_cell(row_count - 1, col_count - 1, cast[cint](parseInt(value)))
+        setCell(row_count - 1, col_count - 1, cast[cint](parseInt(value)))
         known[row_count - 1][col_count - 1] = 1
     
 ##  Can we put n in the cell (i, j)?
-proc is_available*(i: cint; j: cint; n: cint): bool =
+proc isAvailable*(i: cint; j: cint; n: cint): bool =
   return (rows[i] and bits[n]) == 0 and (cols[j] and bits[n]) == 0 and (squares[square(i, j)] and bits[n]) == 0
 
 ##  Tries to fill the cell (i, j) with the next available number.
 ## Returns a flag to indicate if it succeeded.
-proc advance_cell*(i: cint; j: cint): bool =
-  var n: cint = clear_cell(i, j)  
+proc advanceCell*(i: cint; j: cint): bool =
+  var n: cint = clearCell(i, j)  
   inc(n)
   while n <= 9:
-    if is_available(i, j, n):
-      set_cell(i, j, n)
+    if isAvailable(i, j, n):
+      setCell(i, j, n)
       return true
     inc(n)
   return false
@@ -101,7 +101,7 @@ proc algorithm*(): Matrix =
       inc(pos)
     if pos >= 81:
       break
-    if advance_cell(pos div 9, pos mod 9):
+    if advanceCell(pos div 9, pos mod 9):
       inc(pos)
     else:
       while true:
@@ -110,10 +110,10 @@ proc algorithm*(): Matrix =
       if pos < 0:
         break
 
-  result = array_to_matrix()
+  result = arrayToMatrix()
 
 ##  Initializes the array with powers of 2.
-proc init_bits*() =
+proc initBits*() =
   var 
     one: cint = 1
     n: cint = 1
@@ -122,7 +122,7 @@ proc init_bits*() =
     bits[n] = one shl n
     inc(n)
 
-proc array_to_matrix*(): Matrix =
+proc arrayToMatrix*(): Matrix =
   var i: cint = 0
   result = newSeq[seq[string]]()
   while i < 9:
