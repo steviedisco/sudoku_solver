@@ -1,1 +1,2 @@
-nim c -r -o:sudoku_solver.exe --verbosity:0 main.nim
+nim c -o:sudoku_solver.exe --verbosity:0 main.nim
+sudoku_solver "C:\\Development\\suduko_solver\\inputs"

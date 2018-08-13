@@ -3,11 +3,12 @@ import types
 
 {.push hint[XDeclaredButNotUsed]: off.}
 
-proc write(matrix: Matrix) =
+proc to_string(matrix: Matrix): string =
+    result = ""    
     for row in matrix:
         var output: string = ""
         for value in row:
             output = output & value & ","
-        echo output[0 ..< output.high]
+        result = result & output[0 ..< output.high] & "\n"
 
-export write
+export to_string

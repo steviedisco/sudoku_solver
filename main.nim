@@ -1,8 +1,8 @@
 import os, parsecsv
-import types, parser, solver, output_to_text
+import types, parser, solver, matrix_convert
 
-var path = "C:\\Development\\suduko_solver\\inputs\\sudoku1.csv" # paramStr(1) # 
+var path = paramStr(1) # "C:\\Development\\suduko_solver\\inputs\\sudoku1.csv"
 var known = parser.parse(path)
 var solution = solver.solve(known)
 
-output_to_text.write(solution)
+echo matrix_convert.to_string(solution)
