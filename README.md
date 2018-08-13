@@ -4,7 +4,7 @@ fairly light sudoku solver for monthly code compo for csv and png input/output t
 install nim
 https://nim-lang.org/install_windows.html
 
-to build, you'll need to nim-freeimage. 
+to build, you'll need to install nim-freeimage. 
 it's a bit outdated so you'll need to massage it -
 
 1. clone github/nim-freeimage
@@ -14,4 +14,4 @@ it's a bit outdated so you'll need to massage it -
 
 FYI
 VS Code has a nice nim plugin
-GDB is good for debugging in the terminal
+GDB is good for terminal debugging

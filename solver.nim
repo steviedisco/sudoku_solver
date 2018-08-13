@@ -4,13 +4,13 @@ import utils
 proc square*(i: cint; j: cint): cint
 proc setCell*(i: cint; j: cint; n: cint)
 proc clearCell*(i: cint; j: cint): cint
-proc initKnown*(matrix: Matrix)
+proc initKnown*(matrix: StringMatrix)
 proc isAvailable*(i: cint; j: cint; n: cint): bool
 proc advanceCell*(i: cint; j: cint): bool
 proc initBits*()
-proc solve*(matrix: Matrix): Matrix
-proc algorithm*(): Matrix
-proc arrayToMatrix*(): Matrix
+proc solve*(matrix: StringMatrix): StringMatrix
+proc algorithm*(): StringMatrix
+proc arrayToMatrix*(): StringMatrix
 
 ##  The Sudoku matrix itself.
 var matrix*: array[9, array[9, cint]]
@@ -33,7 +33,7 @@ var cols*: array[9, cint]
 ##  An array with some powers of 2 to avoid shifting all the time.
 var bits*: array[10, cint]
 
-proc solve*(matrix: Matrix): Matrix =
+proc solve*(matrix: StringMatrix): StringMatrix =
   initBits()
   initKnown(matrix)
   result = algorithm() 
@@ -63,7 +63,7 @@ proc clearCell*(i: cint; j: cint): cint =
 ##  Processes the program arguments. Each argument is assumed to be a string
 ## with three digits row-col-number, 1-based, representing the known cells in the
 ## Sudoku. For example, "123" means there is a 3 in the cell (0, 1).
-proc initKnown*(matrix: Matrix) =
+proc initKnown*(matrix: StringMatrix) =
   var row_count: cint = 0
   for row in matrix:
     inc(row_count)
@@ -93,7 +93,7 @@ proc advanceCell*(i: cint; j: cint): bool =
   return false
 
 ##  The main function, a fairly generic backtracking algorithm.
-proc algorithm*(): Matrix =
+proc algorithm*(): StringMatrix =
   var pos: cint = 0
 
   while true:
@@ -122,7 +122,7 @@ proc initBits*() =
     bits[n] = one shl n
     inc(n)
 
-proc arrayToMatrix*(): Matrix =
+proc arrayToMatrix*(): StringMatrix =
   var i: cint = 0
   result = newSeq[seq[string]]()
   while i < 9:
