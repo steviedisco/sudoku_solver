@@ -1,4 +1,4 @@
-import os, parsecsv, streams, strutils, times, freeimage
+import os, parsecsv, streams, strutils, times, stb_image/read
 
 {.push hint[XDeclaredButNotUsed]: off.}
 

@@ -1,8 +1,6 @@
 import os
 import utils, solver 
 
-import freeimage
-
 {.push hint[XDeclaredButNotUsed]: off.}
 
 proc processCsv*(csv: string, output_dir: string) =
