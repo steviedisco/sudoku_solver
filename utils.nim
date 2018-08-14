@@ -3,8 +3,16 @@ import os, parsecsv, streams, strutils, times, stb_image/read
 {.push hint[XDeclaredButNotUsed]: off.}
 
 type StringMatrix = seq[seq[string]]
-type ImageMatrix = seq[seq[ptr FIBITMAP]]
 type ChopDirection = enum Horizontal, Vertical
+type Image = object
+    width, height, channels: int
+    data: seq[byte]
+type ImageMatrix = seq[seq[Image]]
+
+type
+    Animal* = object
+      name*, species*: string
+      age: int
 
 template time(caption: string, s: stmt): expr =
     let t0 = cpuTime()
@@ -51,23 +59,45 @@ proc parseCsv*(path: string): StringMatrix =
 
     close(parser)
 
-proc loadPng(path: string): ptr FIBITMAP =
-    result = FreeImage_Load(FREE_IMAGE_FORMAT.FIF_PNG, path, 0)
+proc loadPng(path: string): Image =
+    var image: Image
+    if read.info(path, image.width, image.height, image.channels):
+        image.data = read.load(path, image.width, image.height, image.channels, 0)
+        result = image
 
-proc chopImage(image: ptr FIBITMAP, direction: ChopDirection, num_sections: int): seq[ptr FIBITMAP] =
-    result = newSeq[ptr FIBITMAP]()
+proc crop(image: Image, x: int, y: int, width: int, height: int, bytes_per_pixel: int): Image =
+    result.width = width
+    result.height = height
+    result.channels = image.channels
+
+    let horizontal_size = width * bytes_per_pixel
+
+    var r = y
+    while r < height:
+        var c = x
+        while c < width:
+            var i = 0
+            while i < bytes_per_pixel:
+                result.data.add(image.data[(r * horizontal_size) + (c * bytes_per_pixel) + i])
+                inc(i)
+            inc(c)
+        inc(r)
+
+proc chopImage(image: Image, direction: ChopDirection, sections: int): seq[Image] =
+    result = newSeq[Image]()
     
-    let width = cast[cint](FreeImage_GetWidth(image))
-    let height =cast[cint](FreeImage_GetHeight(image))
-    let section_width = cast[cint](width div num_sections)
-    let section_height = cast[cint](height div num_sections)
+    let width = image.width
+    let height = image.height
+    let section_width = width div sections
+    let section_height = height div sections
+    let bytes_per_pixel = image.channels * 3 # RGB
 
     var n: cint = 0
-    while n < num_sections:
+    while n < sections:
         if direction == ChopDirection.Horizontal:
-            result.add FreeImage_Copy(image, 0, n * section_height, width, (n + 1) * section_height);
+            result.add crop(image, 0, n * section_height, width, (n + 1) * section_height, bytes_per_pixel);
         else:
-            result.add FreeImage_Copy(image, n * section_width, 0, (n + 1) * section_width, height);
+            result.add crop(image, n * section_width, 0, (n + 1) * section_width, height, bytes_per_pixel);
         inc(n)   
 
 proc parsePng*(png_matrix: ImageMatrix): StringMatrix =
