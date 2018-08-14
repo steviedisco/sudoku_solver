@@ -2,6 +2,18 @@ import os, parsecsv, streams, strutils, times, stb_image/read
 
 {.push hint[XDeclaredButNotUsed]: off.}
 
+type OCRAD_Descriptor = ptr object
+proc OCRAD_open: OCRAD_Descriptor {.cdecl, importc, dynlib: "libocrad.dll"}
+
+var descriptor = OCRAD_open()
+
+#proc ocradSetImage(x: cint): cint {.cdecl, dynlib: "libocrad.dll", importc.}
+
+#[
+int OCRAD_set_image( struct OCRAD_Descriptor * const ocrdes,
+                     const struct OCRAD_Pixmap * const image,
+                     const bool invert );
+]#
 type StringMatrix = seq[seq[string]]
 type ChopDirection = enum Horizontal, Vertical
 type Image = object
