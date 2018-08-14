@@ -11,7 +11,7 @@ proc processCsv*(csv: string, output_dir: string) =
 proc processPng*(csv: string, output_dir: string) =
     var image = utils.loadPng(csv)
 
-    var png_matrix = newSeq[seq[ptr FIBITMAP]]()
+    var png_matrix = newSeq[seq[Image]]()
     var rows = utils.chopImage(image, ChopDirection.Horizontal, 9)
 
     for r in rows:

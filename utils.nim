@@ -5,8 +5,8 @@ import os, parsecsv, streams, strutils, times, stb_image/read
 type StringMatrix = seq[seq[string]]
 type ChopDirection = enum Horizontal, Vertical
 type Image = object
-    width, height, channels: int
-    data: seq[byte]
+    width*, height*, channels*: int
+    data*: seq[byte]
 type ImageMatrix = seq[seq[Image]]
 
 type
@@ -18,6 +18,12 @@ template time(caption: string, s: stmt): expr =
     let t0 = cpuTime()
     s
     caption & ": " & $(cpuTime() - t0) & "s"
+
+template max(a: int, b: int): expr =
+    if a > b:
+        a
+    else:
+        b
 
 proc matrixToString*(matrix: StringMatrix): string =
     result = ""    
@@ -65,20 +71,19 @@ proc loadPng(path: string): Image =
         image.data = read.load(path, image.width, image.height, image.channels, 0)
         result = image
 
-proc crop(image: Image, x: int, y: int, width: int, height: int, bytes_per_pixel: int): Image =
+proc crop(image: Image, x: int, y: int, width: int, height: int): Image =
     result.width = width
     result.height = height
     result.channels = image.channels
-
-    let horizontal_size = width * bytes_per_pixel
+    result.data = newSeq[byte]()
 
     var r = y
     while r < height:
         var c = x
         while c < width:
             var i = 0
-            while i < bytes_per_pixel:
-                result.data.add(image.data[(r * horizontal_size) + (c * bytes_per_pixel) + i])
+            while i < image.channels:
+                result.data.add(image.data[(r * width * image.channels) + (c * image.channels) + i])
                 inc(i)
             inc(c)
         inc(r)
@@ -90,14 +95,13 @@ proc chopImage(image: Image, direction: ChopDirection, sections: int): seq[Image
     let height = image.height
     let section_width = width div sections
     let section_height = height div sections
-    let bytes_per_pixel = image.channels * 3 # RGB
 
     var n: cint = 0
     while n < sections:
         if direction == ChopDirection.Horizontal:
-            result.add crop(image, 0, n * section_height, width, (n + 1) * section_height, bytes_per_pixel);
+            result.add crop(image, 0, max(height - 1, n * section_height), width, max(height - 1, (n + 1) * section_height));
         else:
-            result.add crop(image, n * section_width, 0, (n + 1) * section_width, height, bytes_per_pixel);
+            result.add crop(image, max(width - 1, n * section_width), 0, max(width - 1, (n + 1) * section_width), height);
         inc(n)   
 
 proc parsePng*(png_matrix: ImageMatrix): StringMatrix =
@@ -110,5 +114,5 @@ proc parsePng*(png_matrix: ImageMatrix): StringMatrix =
 
         result.add output_row
 
-export StringMatrix, ImageMatrix, ChopDirection
+export StringMatrix, ImageMatrix, Image, ChopDirection
 export time, matrixToString, listFiles, outputCsv, parseCsv, loadPng, chopImage
