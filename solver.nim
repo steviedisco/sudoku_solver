@@ -133,5 +133,3 @@ proc arrayToMatrix*(): StringMatrix =
       inc(j)
     result.add(row)
     inc(i)
-
-export solve

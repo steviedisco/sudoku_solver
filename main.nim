@@ -17,7 +17,7 @@ proc processPng*(csv: string, output_dir: string) =
     for r in rows:
         png_matrix.add utils.chopImage(r, ChopDirection.Vertical, 9)
 
-    var known = utils.parsePng(png_matrix)
+    var known = utils.parseImageMatrix(png_matrix)
     var solution = solver.solve(known)
     outputCsv(output_dir, csv, utils.matrixToString(solution))
 
