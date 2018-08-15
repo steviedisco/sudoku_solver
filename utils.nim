@@ -98,6 +98,7 @@ proc loadPng*(path: string): Image =
         result = image
 
 proc savePng*(image: Image, path: string) =
+    echo path
     if not write.writePNG(path, image.width, image.height, image.channels, image.data):
         quit("failed to save png")
 
@@ -130,11 +131,11 @@ proc chopImage*(image: Image, direction: ChopDirection, sections: int): seq[Imag
     var n: cint = 0
     while n < sections:
         if direction == ChopDirection.Horizontal:
-            var cropped = crop(image, 0, max(height - 1, n * section_height), width, max(height - 1, (n + 1) * section_height));
-            savePng(cropped, "C:\\test.png")
+            var cropped = crop(image, 0, min(height - 1, n * section_height), width, max(height - 1, (n + 1) * section_height));
+            savePng(cropped, "C:\\Users\\steve\\Documents\\test.png")
             result.add cropped
         else:
-            result.add crop(image, max(width - 1, n * section_width), 0, max(width - 1, (n + 1) * section_width), height);
+            result.add crop(image, min(width - 1, n * section_width), 0, max(width - 1, (n + 1) * section_width), height);
         inc(n)   
 
 proc getOcradPixmap(image: Image): OCRAD_Pixmap =
