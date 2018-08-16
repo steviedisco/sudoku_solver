@@ -14,8 +14,8 @@ proc processPng*(csv: string, output_dir: string) =
     var png_matrix = newSeq[seq[Image]]()
     var rows = utils.chopImage(image, ChopDirection.Horizontal, 9)
 
-    for r in rows:
-        png_matrix.add utils.chopImage(r, ChopDirection.Vertical, 9)
+    for row in rows:
+        png_matrix.add utils.chopImage(row, ChopDirection.Vertical, 9)
 
     var known = utils.parseImageMatrix(png_matrix)
     var solution = solver.solve(known)
