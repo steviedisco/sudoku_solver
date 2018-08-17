@@ -2,6 +2,9 @@ import os, parsecsv, streams, strutils, times, stb_image/read, stb_image/write
 
 {.push hint[XDeclaredButNotUsed]: off.}
 
+var png_test: int = 1
+let png_test_dir: string = "C:\\Users\\steve\\Documents\\"
+
 ## ocrad stuff
 type OCRAD_ErrNo = enum 
     OCRAD_ok = 0
@@ -118,6 +121,9 @@ proc crop*(image: Image, x: int, y: int, width: int, height: int): Image =
             inc(c)
         inc(r)
 
+    savePng(result, png_test_dir & $png_test & ".png")
+    inc png_test
+
 proc chopImage*(image: Image, direction: ChopDirection, sections: int): seq[Image] =
     result = newSeq[Image]()
     
@@ -129,9 +135,9 @@ proc chopImage*(image: Image, direction: ChopDirection, sections: int): seq[Imag
     var n: cint = 0
     while n < sections:
         if direction == ChopDirection.Horizontal:
-            result.add crop(image, 0, n * section_height, width, section_height)
+            result.add crop(image, 0, (n * section_height) + 7, width, section_height - 14)
         else:
-            result.add crop(image, n * section_width, 0, section_width, height)
+            result.add crop(image, (n * section_width) + 10, 0, section_width - 20, height)
         inc(n)   
 
 proc getOcradPixmap(image: Image): OCRAD_Pixmap =
@@ -160,8 +166,6 @@ proc parseImage*(ocrdes: OCRAD_Descriptor, image: Image): string =
         result = $value.cuchar
     else:
         result = " "
-
-    echo result
 
 proc parseImageMatrix*(png_matrix: ImageMatrix): StringMatrix =
     result = newSeq[seq[string]]()
