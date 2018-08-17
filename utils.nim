@@ -1,4 +1,4 @@
-import os, parsecsv, streams, strutils, times, stb_image/read, stb_image/write, arrays
+import os, parsecsv, streams, strutils, times, stb_image/read, stb_image/write
 
 {.push hint[XDeclaredButNotUsed]: off.}
 
@@ -18,9 +18,12 @@ type OCRAD_Pixmap_Mode = enum
 type OCRAD_Descriptor* = ref object
 
 type OCRAD_Pixmap* = ref object
-    data*: ptr List[byte]
-    height*, width*: int
+    data*: ptr array[100000, cuchar]
+    height*: cint
+    width*: cint
     mode*: OCRAD_Pixmap_Mode    
+
+var buffer: array[100000, cuchar]
 
 const ocrad_dll* = "ocrad.dll"
 proc OCRAD_version*(): cstring {.cdecl, stdcall, importc, dynlib: ocrad_dll.}
@@ -29,7 +32,7 @@ proc OCRAD_close*(ocrdes: OCRAD_Descriptor) {.cdecl, stdcall, importc, dynlib: o
 proc OCRAD_get_errno*(ocrdes: OCRAD_Descriptor): OCRAD_ErrNo {.cdecl, stdcall, importc, dynlib: ocrad_dll.}
 proc OCRAD_set_image*(ocrdes: OCRAD_Descriptor, pixmap: OCRAD_Pixmap, invert: bool): cint {.cdecl, stdcall, importc, dynlib: ocrad_dll.}
 proc OCRAD_recognize*(ocrdes: OCRAD_Descriptor, layout: bool): cint {.cdecl, stdcall, importc, dynlib: ocrad_dll.}
-proc OCRAD_result_first_character*(ocrdes: OCRAD_Descriptor): cstring {.cdecl, stdcall, importc, dynlib: ocrad_dll.}
+proc OCRAD_result_first_character*(ocrdes: OCRAD_Descriptor): cint {.cdecl, stdcall, importc, dynlib: ocrad_dll.}
 
 ##
 type StringMatrix* = seq[seq[string]]
@@ -38,7 +41,6 @@ type ChopDirection* = enum Horizontal, Vertical
 type Image* = ref object
     width*, height*, channels*: int
     data*: seq[byte]
-    data_list*: List[byte]
 
 type ImageMatrix* = seq[seq[Image]]
 
@@ -46,12 +48,6 @@ template time*(caption: string, s: stmt): expr =
     let t0 = cpuTime()
     s
     caption & ": " & $(cpuTime() - t0) & "s"
-
-template max*(a: int, b: int): expr =
-    if a > b:
-        a
-    else:
-        b
 
 proc matrixToString*(matrix: StringMatrix): string =
     result = ""    
@@ -122,13 +118,6 @@ proc crop*(image: Image, x: int, y: int, width: int, height: int): Image =
             inc(c)
         inc(r)
 
-    # convert seq to array
-    result.data_list = allocList[byte](result.data.len)     
-    var count: int = 0
-    for byt in result.data:
-        result.data_list[count] = byt
-        inc count
-
 proc chopImage*(image: Image, direction: ChopDirection, sections: int): seq[Image] =
     result = newSeq[Image]()
     
@@ -148,9 +137,14 @@ proc chopImage*(image: Image, direction: ChopDirection, sections: int): seq[Imag
 proc getOcradPixmap(image: Image): OCRAD_Pixmap =
     new result
     result.mode = OCRAD_Pixmap_Mode.OCRAD_colormap
-    result.height = image.height
-    result.width = image.width    
-    result.data = image.data_list.unsafeAddr
+    result.height = image.height.cint
+    result.width = image.width.cint
+    result.data = buffer.unsafeAddr
+
+    var count: int = 0
+    for byt in image.data:
+        buffer[count] = byt.cuchar
+        inc count
 
 proc parseImage*(ocrdes: OCRAD_Descriptor, image: Image): string =
     var pixmap = getOcradPixmap(image)
@@ -161,8 +155,13 @@ proc parseImage*(ocrdes: OCRAD_Descriptor, image: Image): string =
     if OCRAD_recognize(ocrdes, false) == -1:
         quit("Ocrad failed to recognize image")
 
-    echo OCRAD_result_first_character(ocrdes)
-    #result = cast[string]()
+    var value = OCRAD_result_first_character(ocrdes).byte
+    if value != 0 and Digits.find(value.cuchar) >= 0:
+        result = $value.cuchar
+    else:
+        result = " "
+
+    echo result
 
 proc parseImageMatrix*(png_matrix: ImageMatrix): StringMatrix =
     result = newSeq[seq[string]]()
